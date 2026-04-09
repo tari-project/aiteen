@@ -39,7 +39,11 @@ def load_en_keys(en_json_files):
     return all_keys
 
 # Function to compare the English keys with other locale keys, considering identical values as missing
-def compare_keys(en_data, other_locale_data):
+import logging
+
+logging.basicConfig(level=logging.INFO)
+
+def compare_keys(en_data, other_locale_data, translate_func=lambda x: x):
     # Extract nested keys from the English data
     en_keys = extract_keys(en_data, "en.json")  # Provide a placeholder for json_file
     # Extract nested keys from the locale data
@@ -142,7 +146,7 @@ def compare_keys_in_locales(base_path, en_path, output_dir):
             locale_data.update(extract_keys(locale_json_data, json_file))  # Track file with key
 
         # Compare the fully unpacked keys, treating identical values as missing
-        missing_keys, extraneous_keys = compare_keys(all_en_data, locale_data)
+        missing_keys, extraneous_keys = compare_keys(all_en_data, locale_data, translate_func=lambda x: x)
 
         # Associate missing/extraneous keys with their respective JSON files
         missing_keys_with_file = [(key, all_en_data[key]) for key in missing_keys]
