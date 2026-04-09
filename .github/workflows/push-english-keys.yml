@@ -1,0 +1,43 @@
+name: Push English Keys to Tolgee
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'public/locales/en/*.json' # For Tari Universe
+      - 'wxtm-bridge-frontend/public/locales/en/*.json' # For WXTM Bridge
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  push_keys:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Tolgee CLI
+        run: npm install -g @tolgee/cli
+
+      - name: Push Universe English keys to Tolgee
+        env:
+          TOLGEE_API_KEY: ${{ secrets.TOLGEE_API_KEY }}
+          TOLGEE_PROJECT_ID: ${{ secrets.TOLGEE_UNIVERSE_PROJECT_ID }}
+        run: |
+          if [ -d "public/locales/en" ]; then
+            tolgee import --path "public/locales/en" --format json --language en --force-update
+          else
+            echo "Universe English locale directory not found. Skipping."
+          fi
+
+      - name: Push WXTM Bridge English keys to Tolgee
+        env:
+          TOLGEE_API_KEY: ${{ secrets.TOLGEE_API_KEY }}
+          TOLGEE_PROJECT_ID: ${{ secrets.TOLGEE_WXTM_BRIDGE_PROJECT_ID }}
+        run: |
+          if [ -d "wxtm-bridge-frontend/public/locales/en" ]; then
+            tolgee import --path "wxtm-bridge-frontend/public/locales/en" --format json --language en --force-update
+          else
+            echo "WXTM Bridge English locale directory not found. Skipping."
+          fi
+
