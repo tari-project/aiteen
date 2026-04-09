@@ -23,7 +23,7 @@ def load_csv_files(english_path, locale_comparison_path):
 
 
 # Function to create the GPT-4 prompt and send a batch translation request
-def gpt_translate(translation_list, locale):
+def gpt_translate(translation_list, locale, translate_context):
     # Map locales to the full names of their languages
     locale_to_language = {
         'en': 'English',
@@ -133,6 +133,14 @@ def gpt_translate(translation_list, locale):
 
 
 # Function to process missing translations in batches and update the DataFrame
+import logging
+
+logging.basicConfig(level=logging.INFO)
+
+import logging
+
+logging.basicConfig(level=logging.INFO)
+
 def process_missing_translations(english_labels_df, locale_key_comparison_df):
     # Filter rows with missing translations
     missing_translations_df = locale_key_comparison_df[locale_key_comparison_df['status'] == 'missing']
@@ -155,7 +163,7 @@ def process_missing_translations(english_labels_df, locale_key_comparison_df):
         translation_list = locale_missing[['label_key', 'value']].to_dict(orient='records')
         
         # Call GPT-4 to translate the batch of phrases for this locale
-        translations = gpt_translate(translation_list, locale)
+        translations = gpt_translate(translation_list, locale, translate_context={})
 
         if translations:
             print(f"Translations returned for {locale}: {translations}")
