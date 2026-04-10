@@ -36,8 +36,8 @@ Periodically (e.g., daily schedule) or manually, a GitHub Action runs to pull al
 
 Two primary GitHub Actions workflows are now in place:
 
-*   **`push-english-keys.yml`**: Watches for changes in English locale files in `tari-project/universe` and `tari/wxtm-bridge` and automatically pushes new/updated keys to Tolgee.
-*   **`pull-translations.yml`**: Periodically (or on demand) pulls all reviewed translations from Tolgee, updates the locale files in both `tari-project/universe` and `tari/wxtm-bridge`, and commits the changes.
+*   **`push-english-keys.yml`**: Watches for changes in English locale files in `public/locales/en` (Universe) and `wxtm-bridge-frontend/public/locales/en` (WXTM Bridge) and automatically pushes new/updated keys to Tolgee.
+*   **`pull-translations.yml`**: Periodically (or on demand) pulls all reviewed translations from Tolgee, updates the locale files in both projects (`public/locales/{lang}/` and `wxtm-bridge-frontend/public/locales/{lang}/`), and commits the changes.
 
 ## Deprecation of Legacy Scripts
 
@@ -48,5 +48,6 @@ The custom Python scripts (`i18n_checker.py`, `i18n_translator.py`, `i18n_patch_
 *   **Tolgee Instance:** A running Tolgee instance (cloud or self-hosted).
 *   **Tolgee API Key:** An API key with appropriate permissions (read/write keys, languages, translations) to be set as a GitHub Secret (`TOLGEE_API_KEY`).
 *   **Tolgee Project ID:** The Project ID(s) for your Tolgee project(s), to be set as GitHub Secrets (`TOLGEE_UNIVERSE_PROJECT_ID`, `TOLGEE_WXTM_BRIDGE_PROJECT_ID`).
+*   **GitHub Token Permissions:** The `pull-translations.yml` workflow commits updated translations back to the repository and requires `contents: write` permissions for the `GITHUB_TOKEN`. If the default token lacks this, configure a Personal Access Token (PAT) as `GITHUB_TOKEN`.
 
 Refer to the GitHub Actions workflows in `.github/workflows/` for detailed implementation.
