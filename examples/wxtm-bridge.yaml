@@ -1,0 +1,8 @@
+# Config for WXTM Bridge frontend
+locales_dir: wxtm-bridge-frontend/public/locales
+source_lang: en
+target_langs:
+  - ar
+  - de
+  - es
+  - fr
