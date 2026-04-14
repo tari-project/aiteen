@@ -1,21 +1,45 @@
-[tool.poetry]
-name = "data-analysis"
-version = "0.1.0"
-description = ""
-authors = ["Simon Hill <simonhill303@gmail.com>"]
-readme = "README.md"
-
-[tool.poetry.dependencies]
-python = "^3.12"
-ipykernel = "^6.29.5"
-base58 = "^2.1.1"
-pandas = "^2.2.3"
-requests = "^2.32.3"
-matplotlib = "^3.9.2"
-openai = "^1.50.2"
-python-dotenv = "^1.0.1"
-
-
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aiteen"
+version = "2.0.0"
+description = "Robust AI-driven i18n translation pipeline for Tari projects"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "BSD-3-Clause" }
+authors = [{ name = "Tari Project" }]
+keywords = ["i18n", "translation", "openai", "locale", "tari"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: BSD License",
+]
+dependencies = [
+    "click>=8.1",
+    "openai>=1.40",
+    "python-dotenv>=1.0",
+    "pyyaml>=6.0",
+    "rich>=13.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "pytest-mock>=3.12",
+]
+
+[project.scripts]
+aiteen = "aiteen.cli:cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["aiteen*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
