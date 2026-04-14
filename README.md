@@ -1,114 +1,53 @@
-# Internationalization (i18n) Management Workflow
+# Internationalization (i18n) Management with Tolgee
 
-This repository contains a suite of tools for managing internationalization (i18n) in projects. The workflow consists of four main steps:
+This repository previously contained a custom i18n pipeline (`aiteen`), which has been deprecated and replaced by **Tolgee**, an established open-source i18n management platform. Tolgee provides a robust solution for managing translations across Tari projects (Universe, WXTM Bridge, and future applications) with integrated AI translation, a review workflow, and full CI/CD support.
 
-## Workflow Overview
+## Solution Rationale: Why Tolgee?
 
-### 1. Audit Strings (Check for Missing Translations)
-First, run the checker to identify missing translations and generate comparison files:
+Tolgee was selected as the replacement solution due to its comprehensive features that directly address the pain points of the previous custom pipeline:
 
-```bash
-python i18n_checker.py compare \
-  --en-locale-path /Users/possum/Projects/tari/universe/public/locales/en \
-  --base-path /Users/possum/Projects/tari/universe/public/locales \
-  --output-dir locale_comparison
-```
+1.  **Robust Platform:** Tolgee offers a dedicated web interface for translation management, making it easy for non-developers to contribute, review, and approve translations.
+2.  **Seamless AI Integration:** It has built-in support for AI translation services (like OpenAI), allowing for automated, context-aware translation of missing keys directly within the platform.
+3.  **Review Workflow:** Tolgee provides clear states for translations (untranslated, translated, reviewed), enabling a structured review and approval process before translations are finalized. Permissions can be set to control who can perform reviews.
+4.  **CI/CD Integration:** With its powerful CLI tool and API, Tolgee integrates natively into GitHub Actions, automating the detection of new English strings and the synchronization of translated content.
+5.  **Multi-Project Support:** Tolgee handles multiple projects (e.g., Tari Universe, WXTM Bridge) within a single instance, allowing for shared languages and streamlined management across the ecosystem.
+6.  **Flexible Locale Structure:** It supports various file formats, including JSON, and can be configured to work with existing project structures (`public/locales/{lang}/`).
 
-This will:
-- Create empty directories for new languages if they don't exist
-- Generate CSV files comparing English keys with other locales
-- Identify missing or untranslated strings
+## New i18n Workflow with Tolgee
 
-### 2. Translate Missing Strings
-Run the translator to automatically translate missing strings using AI:
+The new workflow focuses on automating translation management via Tolgee and GitHub Actions.
 
-```bash
-python i18n_translator.py \
-  --input-dir locale_comparison \
-  --output-dir locale_comparison
-```
+### 1. Add New English Keys
 
-This will:
-- Read the comparison files from step 1
-- Use OpenAI to translate missing strings
-- Generate updated CSV files with translations
+Developers add new strings directly into their English locale JSON files (e.g., `public/locales/en/common.json`). When these changes are pushed to a `main` branch (or merged via PR), a GitHub Action automatically pushes these new keys to Tolgee.
 
-### 3. Patch Locale Files
-Apply the translations to your local locale directory:
+### 2. Automatic AI Translation & Review
 
-```bash
-python i18n_patch_locales.py \
-  --source-locale-path /Users/possum/Projects/tari/universe/public/locales \
-  --target-locale-path locales \
-  --csv-file locale_comparison/translated_locale_key_comparison_consolidated.csv
-```
+Once new keys are pushed to Tolgee:
+*   Tolgee automatically detects missing translations for other configured languages.
+*   Configured AI translation (e.g., OpenAI) generates initial translations.
+*   Translators or project managers log into the Tolgee UI to review, refine, and approve these AI-generated translations. The review process ensures high-quality output before deployment.
 
-This will:
-- Copy source locale files to a local directory
-- Apply all translations from the CSV file
-- Ensure all locales have the same key structure as English
+### 3. Pulling Translations into Projects
 
-### 4. Quality Assurance Check
-Generate a QA matrix to review translations:
+Periodically (e.g., daily schedule) or manually, a GitHub Action runs to pull all approved translations from Tolgee back into the respective project repositories. This action updates the locale JSON files for all languages.
 
-```bash
-python i18n_qa.py \
-  --en-locale-path /Users/possum/Projects/tari/universe/public/locales/en \
-  --base-path /Users/possum/Projects/tari/universe/public/locales \
-  --output-dir locale_comparison
-```
+### 4. Integration with CI (GitHub Actions)
 
-This will generate reports showing translation coverage and quality metrics.
+Two primary GitHub Actions workflows are now in place:
 
-## Example: WXTM Bridge Project
+*   **`push-english-keys.yml`**: Watches for changes in English locale files in `public/locales/en` (Universe) and `wxtm-bridge-frontend/public/locales/en` (WXTM Bridge) and automatically pushes new/updated keys to Tolgee.
+*   **`pull-translations.yml`**: Periodically (or on demand) pulls all reviewed translations from Tolgee, updates the locale files in both projects (`public/locales/{lang}/` and `wxtm-bridge-frontend/public/locales/{lang}/`), and commits the changes.
 
-For the WXTM Bridge project, use these commands:
+## Deprecation of Legacy Scripts
 
-```bash
-# 1. Check for missing translations
-python i18n_checker.py compare \
-  --en-locale-path /Users/possum/Projects/tari/wxtm-bridge/wxtm-bridge-frontend/public/locales/en \
-  --base-path /Users/possum/Projects/tari/wxtm-bridge/wxtm-bridge-frontend/public/locales \
-  --output-dir locale_comparison_wxtm
+The custom Python scripts (`i18n_checker.py`, `i18n_translator.py`, `i18n_patch_locales.py`, `i18n_qa.py`) previously used for Aiteen are now deprecated. All functionality related to auditing, translating, patching, and QA is now handled by the Tolgee platform and its integrated CI workflows.
 
-# 2. Translate missing strings
-python i18n_translator.py \
-  --input-dir locale_comparison_wxtm \
-  --output-dir locale_comparison_wxtm
+## Requirements for Tolgee Integration
 
-# 3. Patch locale files
-python i18n_patch_locales.py \
-  --source-locale-path /Users/possum/Projects/tari/wxtm-bridge/wxtm-bridge-frontend/public/locales \
-  --target-locale-path locales \
-  --csv-file locale_comparison_wxtm/translated_locale_key_comparison_consolidated.csv
+*   **Tolgee Instance:** A running Tolgee instance (cloud or self-hosted).
+*   **Tolgee API Key:** An API key with appropriate permissions (read/write keys, languages, translations) to be set as a GitHub Secret (`TOLGEE_API_KEY`).
+*   **Tolgee Project ID:** The Project ID(s) for your Tolgee project(s), to be set as GitHub Secrets (`TOLGEE_UNIVERSE_PROJECT_ID`, `TOLGEE_WXTM_BRIDGE_PROJECT_ID`).
+*   **GitHub Token Permissions:** The `pull-translations.yml` workflow commits updated translations back to the repository and requires `contents: write` permissions for the `GITHUB_TOKEN`. If the default token lacks this, configure a Personal Access Token (PAT) as `GITHUB_TOKEN`.
 
-# 4. Copy to project (omit the en folder)
-After running the workflow, copy the updated locale files from the `locales` directory back to your project:
-
-```bash
-cp -r locales/* /path/to/your/project/public/locales/
-```
-
-# 5. QA check final repo
-```bash
-python i18n_qa.py \
-  --en-locale-path /Users/possum/Projects/tari/wxtm-bridge/wxtm-bridge-frontend/public/locales/en \
-  --base-path /Users/possum/Projects/tari/wxtm-bridge/wxtm-bridge-frontend/public/locales \
-  --output-dir locale_comparison_wxtm
-```
-
-
-
-## Requirements
-
-- Python 3.x
-- Required packages: `pandas`, `openai`, `python-dotenv`
-- OpenAI API key (set in `.env` file as `OPENAI_API_KEY`)
-
-## Output Files
-
-The workflow generates several CSV files for analysis:
-- `english_labels.csv` - All English strings
-- `locale_key_comparison_consolidated.csv` - Missing translation comparison
-- `translated_locale_key_comparison_consolidated.csv` - With AI translations
-- `locale_translation_comparison.csv` - QA matrix
+Refer to the GitHub Actions workflows in `.github/workflows/` for detailed implementation.

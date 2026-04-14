@@ -1,0 +1,43 @@
+name: Pull Translations from Tolgee
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Run daily at midnight UTC
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  pull_translations:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Tolgee CLI
+        run: npm install -g @tolgee/cli
+
+      - name: Pull Universe translations from Tolgee
+        env:
+          TOLGEE_API_KEY: ${{ secrets.TOLGEE_API_KEY }}
+          TOLGEE_PROJECT_ID: ${{ secrets.TOLGEE_UNIVERSE_PROJECT_ID }}
+        run: |
+          mkdir -p public/locales
+          tolgee export --path "public/locales/{lang}" --format json --structure namespace --empty-as-source
+          echo "::set-output name=universe_changed::true"
+        id: universe_pull
+
+      - name: Pull WXTM Bridge translations from Tolgee
+        env:
+          TOLGEE_API_KEY: ${{ secrets.TOLGEE_API_KEY }}
+          TOLGEE_PROJECT_ID: ${{ secrets.TOLGEE_WXTM_BRIDGE_PROJECT_ID }}
+        run: |
+          mkdir -p wxtm-bridge-frontend/public/locales
+          tolgee export --path "wxtm-bridge-frontend/public/locales/{lang}" --format json --structure namespace --empty-as-source
+          echo "::set-output name=wxtm_changed::true"
+        id: wxtm_pull
+
+      - name: Commit changes (if any)
+        if: steps.universe_pull.outputs.universe_changed == 'true' || steps.wxtm_pull.outputs.wxtm_changed == 'true'
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "chore(i18n): Update translations from Tolgee"
+          branch: main # Or your desired target branch
