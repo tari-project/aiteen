@@ -3,3 +3,11 @@ datasets
 locales
 locale_comparison
 .direnv
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+*.egg
