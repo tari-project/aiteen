@@ -182,7 +182,6 @@ def cmd_run_all(ctx, skip_translate):
         cfg = _make_config(ctx.obj)
     except (click.UsageError, FileNotFoundError, ValueError, OSError) as e:
         _handle_error(e)
-        return
     try:
         console.rule("[bold]1/4 Audit")
         audit = audit_all(cfg.locales_dir, cfg.source_locale, cfg.target_locales)

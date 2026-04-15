@@ -45,15 +45,12 @@ def patch_locale(
         if ns_path.is_file():
             existing = load_json(ns_path)
 
-        # Convert existing to flat, override, then unflatten — preserves order
-        # of source keys while letting us write nested dotted keys cleanly.
-        flat_existing = flatten(existing)
-        for key, val in flat_translations.items():
-            flat_existing[key] = val
-        merged = unflatten(flat_existing)
-        # Deep-merge against the original existing dict to keep any keys
-        # `flatten` may have collapsed (e.g. empty-dict leaves).
-        merged = deep_merge(existing, merged)
+        # Unflatten only the new translations, then deep-merge into existing.
+        # This avoids the key-conflict hazard of flattening both dicts together
+        # (e.g. when one key is a prefix of another such as "a" and "a.b"),
+        # which would cause `unflatten` to destructively overwrite values.
+        new_translations = unflatten(flat_translations)
+        merged = deep_merge(existing, new_translations)
 
         counts[ns] = len(flat_translations)
         if dry_run:
